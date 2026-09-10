@@ -20,14 +20,32 @@ def main(user: str) -> None:
     # TODO: Console Output
 
 
-def ask_directory() -> Path:
+def ask_directory() -> Path | None:
+    """
+    Asks User to selected desired save directory.
+    Returns selected directory path or None if cancelled.
+    :return Path | None: Directory path or None
+    """
     root = Tk()
-    root.withdraw()
-    root.attributes('-topmost', True)
-    path = askdirectory(title='Select Folder')  # TODO: Folder not selected exception
-    root.destroy()
-    return Path(path)
+    try:
+        root.withdraw()
+        root.attributes('-topmost', True)
+        selected = askdirectory(title='Select Folder',
+                                mustexist=True,
+                                parent=root)
+    finally:
+        root.destroy()
 
+    if not selected:
+        return None
+
+    return Path(selected)
+
+
+def build_filepath(path: Path, filename: str) -> Path | None:
+    """TBA"""
+    # TODO: a function that will build the correct filepath for the save_file function
+    pass
 
 def save_file(user: str) -> str:
     """
@@ -37,6 +55,8 @@ def save_file(user: str) -> str:
     """
 
     path = ask_directory()
+    if path is None:
+        return "User cancelled saving the activity."
     filename = str(input("Input filename: ")) + ".json"  # TODO: Filename correctness checks
     filepath = path / filename
 
@@ -46,7 +66,7 @@ def save_file(user: str) -> str:
             path = ask_directory()
             filename = str(input("Input filename: ")) + ".json"
             if exists(f"{filepath}"):
-                filename = filename[:-5] + "(1)" + filename[-5:]  #TODO: Fix - Collision suffix (1) is only tried once
+                filename = filename[:-5] + "(1)" + filename[-5:]  # TODO: Fix - Collision suffix (1) is only tried once
 
         elif decision not in ["Y", "N"]:
             raise ValueError(f"Unexpected input provided: {decision!r}")
@@ -68,7 +88,7 @@ def get_activity(user: str) -> list[dict] | dict:
     :param user: github username
     :return: user's github activity in json format
     """
-    r = requests.get(f"https://api.github.com/users/{user}/events")  #TODO: Add Status Checks
+    r = requests.get(f"https://api.github.com/users/{user}/events")  # TODO: Add Status Checks
     return r.json()
 
 
@@ -77,4 +97,4 @@ if __name__ == "__main__":
         main(sys.argv[1])
     except IndexError:
         print("Usage: main.py <username>")
-    #TODO: Except ValueError in save_file()
+    # TODO: Except ValueError in save_file()

@@ -20,7 +20,7 @@ def main(user: str) -> None:
     # TODO: Console Output
 
 
-def ask_directory() -> Path | None:
+def ask_directory(ask_title: str | None = "Select Directory") -> Path | None:
     """
     Asks User to selected desired save directory.
     Returns selected directory path or None if cancelled.
@@ -30,7 +30,7 @@ def ask_directory() -> Path | None:
     try:
         root.withdraw()
         root.attributes('-topmost', True)
-        selected = askdirectory(title='Select Folder',
+        selected = askdirectory(title=ask_title,
                                 mustexist=True,
                                 parent=root)
     finally:
@@ -55,6 +55,7 @@ def build_filepath(path: Path, filename: str) -> Path:
 
 
 def save_file(user: str) -> str:
+    # TODO: Separate this function into many smaller ones
     """
     Saves user's activity to a desired file.
     :param user: username:
@@ -65,26 +66,33 @@ def save_file(user: str) -> str:
     if path is None:
         return "User cancelled saving the activity."
     filename = str(input("Input filename: ")) + ".json"  # TODO: Filename correctness checks
-    if (filepath := build_filepath(path, filename)) is None:
-        raise ValueError("Filepath building went wrong.")
+    filepath = build_filepath(path, filename)
+    # code above is the 1st filepath building attempt
 
-    if exists(f"{filepath}"):
-
+    if exists(filepath):
         if (decision := str(input(r"Do you wish to overwrite the existing file? Y\N: ")).upper()) == "N":
+            # asks user to point a new directory and filepath
             path = ask_directory()
             if path is None:
                 return "User cancelled saving the activity."
             filename = str(input("Input filename: ")) + ".json"
             filepath = build_filepath(path, filename)
-            if exists(f"{filepath}"):
-                filename = filename[:-5] + "(1)" + filename[-5:]  # TODO: Fix - Collision suffix (1) is only tried once
         elif decision not in ["Y", "N"]:
             raise ValueError(f"Unexpected input provided: {decision!r}")
 
-    with open(fr"{filepath}", "w") as f:
+    # adds suffix if the file already exists AGAIN
+    while exists(filepath):
+        try:
+            if isinstance(int(filename[-7:-6]), int):  # I might change slicing to regex someday
+                filename = filename[:-7] + str(int(filename[-7:-6]) + 1) + filename[-6:]
+        except ValueError:
+            filename = filename[:-5] + "(1)" + filename[-5:]
+        filepath = build_filepath(path, filename)
+
+    with open(filepath, "w") as f:
         json.dump(get_activity(user), f, indent=4)
 
-    if exists(f"{filepath}"):
+    if exists(filepath):
         print("successfully saved")
         return f"Successfully saved {user}'s activity"
 
@@ -98,13 +106,13 @@ def get_activity(user: str) -> list[dict] | dict:
     :param user: github username
     :return: user's github activity in json format
     """
-    r = requests.get(f"https://api.github.com/users/{user}/events")  # TODO: Add Status Checks
+    r = requests.get(f"https://api.github.com/users/{user}/events")  # TODO: Add Status Checks and Timeout
     return r.json()
 
 
 if __name__ == "__main__":
     try:
-        main(sys.argv[1])
+        main(sys.argv[1])  # TODO: Add username Check
     except IndexError:
-        print("Usage: main.py <username>")
+        print("current WIP usage: pyton __init__.py <username>")
     # TODO: Except ValueError in save_file()

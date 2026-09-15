@@ -14,6 +14,7 @@ def main(user: str) -> None:
     :param user: github username
     :return: None
     """
+    # TODO: a check for get_activity()
     if str(input(fr"Do you wish to save {user}'s activity? Y\N: ")).upper() == "Y":
         save_file(user)
 
@@ -100,14 +101,24 @@ def save_file(user: str) -> str:
         return f"Failed to save {user}'s activity"
 
 
-def get_activity(user: str) -> list[dict] | dict:
+def get_activity(user: str) -> list[dict] | dict | None:
     """
     Gets user's activity from github api
     :param user: github username
     :return: user's github activity in json format
     """
-    r = requests.get(f"https://api.github.com/users/{user}/events")  # TODO: Add Status Checks and Timeout
-    return r.json()
+
+    # TODO: a catch-all instead of enumerating every subclass exception
+
+    try:
+        r = requests.get(f"https://api.github.com/users/{user}/events", timeout=15)
+        r.raise_for_status()
+    except requests.exceptions.Timeout as e:
+        raise RuntimeError(f"Request timed out for: '{user}'") from e
+    except requests.exceptions.HTTPError as e:
+        raise RuntimeError(f"GitHub API request failed for '{user}', error: {e}") from e
+    else:
+        return r.json()
 
 
 if __name__ == "__main__":

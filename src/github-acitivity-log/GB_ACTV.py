@@ -1,5 +1,6 @@
 import json
 import sys
+from json import JSONDecodeError
 from os.path import exists
 from pathlib import Path
 from tkinter import Tk
@@ -14,9 +15,12 @@ def main(user: str) -> None:
     :param user: github username
     :return: None
     """
-    # TODO: a check for get_activity()
-    if str(input(fr"Do you wish to save {user}'s activity? Y\N: ")).upper() == "Y":
-        save_file(user)
+
+    data = get_activity(user)
+    if not data:
+        print(f"No activity found for user: {user}")
+    else:
+        save_file(user, data)
 
     # TODO: Console Output
 
@@ -55,11 +59,12 @@ def build_filepath(path: Path, filename: str) -> Path:
         raise ValueError(f"Following input: {path!r} and {filename!r} caused invalid filepath generation.")
 
 
-def save_file(user: str) -> str:
+def save_file(user: str, data: list[dict] | dict | None) -> str:
     # TODO: Separate this function into many smaller ones
     """
     Saves user's activity to a desired file.
-    :param user: username:
+    :param user: username
+    :param data: user's activity data
     :return str: returns a message indicating whether the file was saved successfully
     """
 
@@ -90,28 +95,34 @@ def save_file(user: str) -> str:
             filename = filename[:-5] + "(1)" + filename[-5:]
         filepath = build_filepath(path, filename)
 
-    with open(filepath, "w") as f:
-        json.dump(get_activity(user), f, indent=4)
+    # writes the data to the file, runs error checks
+    try:
+        with open(filepath, "w", encoding="utf-8") as f:  # TODO: write the data to a temp file first, then replace
+            json.dump(data, f, indent=4)
+    except (OSError, TypeError) as e:
+        raise RuntimeError(f"Failed to save {user}'s activity. Error: {e}") from e
 
-    if exists(filepath):
-        print("successfully saved")
-        return f"Successfully saved {user}'s activity"
+    try:
+        with open(filepath, "r") as f:
+            json.load(f)
+    except (JSONDecodeError, OSError) as e:
+        raise RuntimeError(f"File is corrupted. Error: {e}") from e
 
-    else:
-        return f"Failed to save {user}'s activity"
+    return "File saved successfully at: " + str(filepath)
 
 
-def get_activity(user: str) -> list[dict] | dict | None:
+def get_activity(user: str) -> list[dict]:
     """
     Gets user's activity from github api
     :param user: github username
     :return: user's github activity in json format
     """
 
-    # TODO: a catch-all instead of enumerating every subclass exception
+    # TODO: make this more catch-all, specific handling where needed
 
     try:
         r = requests.get(f"https://api.github.com/users/{user}/events", timeout=15)
+        #TODO: make the GET API request follow GitHb REST conventions
         r.raise_for_status()
     except requests.exceptions.Timeout as e:
         raise RuntimeError(f"Request timed out for: '{user}'") from e
@@ -125,5 +136,5 @@ if __name__ == "__main__":
     try:
         main(sys.argv[1])  # TODO: Add username Check
     except IndexError:
-        print("current WIP usage: pyton __init__.py <username>")
+        print("current WIP usage: python __init__.py <username>")
     # TODO: Except ValueError in save_file()

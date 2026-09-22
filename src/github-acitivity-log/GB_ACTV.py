@@ -17,12 +17,26 @@ def main(user: str) -> None:
     """
 
     data = get_activity(user)
-    if not data:
-        print(f"No activity found for user: {user}")
-    else:
+    if data:
+        print(f"Activity found for '{user}'\n")
         save_file(user, data)
+    else:
+        print(f"No activity found for user: {user}")
 
     # TODO: Console Output
+
+
+def menu_ask_user(question: str, **options: str) -> str | int:
+    """
+    Asks user a question, displays options and returns their input.
+    :param question: The question to ask the user
+    :param options: Options that user can choose
+    :return: User's input as a string or integer
+    """
+    # TODO: Implement this function to ask the user a question and return their input based on the provided options.
+    if len(options) < 2:
+        pass
+    pass
 
 
 def ask_directory(ask_title: str | None = "Select Directory") -> Path | None:
@@ -71,7 +85,7 @@ def save_file(user: str, data: list[dict] | dict | None) -> str:
 
     path = ask_directory()
     if path is None:
-        return "User cancelled saving the activity."
+        return "User cancelled saving the activity."  #TODO: make usage of this message
     filename = str(input("Input filename: ")) + ".json"  # TODO: Filename correctness checks
     filepath = build_filepath(path, filename)
     # code above is the 1st filepath building attempt
@@ -81,7 +95,7 @@ def save_file(user: str, data: list[dict] | dict | None) -> str:
             # asks user to point a new directory and filepath
             path = ask_directory()
             if path is None:
-                return "User cancelled saving the activity."
+                return "User cancelled saving the activity."  #TODO: make usage of this message
             filename = str(input("Input filename: ")) + ".json"
             filepath = build_filepath(path, filename)
         elif decision not in ["Y", "N"]:
@@ -109,7 +123,7 @@ def save_file(user: str, data: list[dict] | dict | None) -> str:
     except (JSONDecodeError, OSError) as e:
         raise RuntimeError(f"File is corrupted. Error: {e}") from e
 
-    return "File saved successfully at: " + str(filepath)
+    return "File saved successfully at: " + str(filepath)  #TODO: make usage of this message
 
 
 def get_activity(user: str) -> list[dict]:
@@ -138,4 +152,3 @@ if __name__ == "__main__":
         main(sys.argv[1])  #TODO: Private profile handling
     except IndexError:
         print("current WIP usage: python __init__.py <username>")
-    # TODO: Except ValueError in save_file()

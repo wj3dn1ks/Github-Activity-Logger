@@ -27,7 +27,7 @@ def main(user: str) -> None:
 
 def ask_directory(ask_title: str | None = "Select Directory") -> Path | None:
     """
-    Asks User to selected desired save directory.
+    Asks User to select desired save directory.
     Returns selected directory path or None if cancelled.
     :return Path | None: Directory path or None
     """
@@ -67,6 +67,7 @@ def save_file(user: str, data: list[dict] | dict | None) -> str:
     :param data: user's activity data
     :return str: returns a message indicating whether the file was saved successfully
     """
+    # TODO: .md file output option
 
     path = ask_directory()
     if path is None:
@@ -134,7 +135,7 @@ def get_activity(user: str) -> list[dict]:
 
 if __name__ == "__main__":
     try:
-        main(sys.argv[1])  # TODO: Add username Check
+        main(sys.argv[1])  #TODO: Private profile handling
     except IndexError:
         print("current WIP usage: python __init__.py <username>")
     # TODO: Except ValueError in save_file()

@@ -26,18 +26,28 @@ def main(user: str) -> None:
     # TODO: Console Output
 
 
-def menu_ask_user(question: str, **options: str) -> str | int:
-    """
-    Asks user a question, displays options and returns their input.
-    :param question: The question to ask the user
-    :param options: Options that user can choose
-    :return: User's input as a string or integer
-    """
-    # TODO: Implement this function to ask the user a question and return their input based on the provided options.
-    if len(options) < 2:
-        pass
-    pass
-
+# def menu_ask_user(question: str = "Choose an option", *options: str) -> str | int:
+#     """
+#     Asks user a question, displays options and returns their input.
+#     :param question: The question to ask the user
+#     :param options: Options that user can choose
+#     :return: User's input as a string or integer
+#     """
+#     # TODO: Implement this function to ask the user a question and return their input based on the provided options.
+#     if len(options) < 2:
+#         pass
+#     values = [value for value in options]
+#     print(question)
+#     x=0
+#     while x < len(options):
+#         print(f"{x+1} - {values[x]}")
+#         x+=1
+#     response = int(input("Enter your choice: "))
+#     if response not in range(0, len(values)+1):
+#         print("Invalid choice. Please try again.")
+#         return menu_ask_user(question, *options)
+#     response = values[int(response-1)]
+#     return response
 
 def ask_directory(ask_title: str | None = "Select Directory") -> Path | None:
     """
